@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "npx live-server --entry-file=public/index.html --port=3000",
-    "serve": "npx live-server --entry-file=public/index.html --port=3000"
+    "serve": "npx live-server --entry-file=public/index.html --port=3000",
+    "build": "mkdir -p dist && cp -r public/* dist/"
   },
   "devDependencies": {
     "live-server": "^1.2.2"
