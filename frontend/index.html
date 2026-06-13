@@ -4,15 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Task Management App</title>
-  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="src/index.css" />
 </head>
 <body>
   <main class="container">
-    <!-- Authentication Container -->
     <div id="auth-container" class="auth-container">
       <h1>Task Management App</h1>
-
-      <!-- Login Form -->
       <form id="login-form" class="form-section">
         <h2>Login</h2>
         <input id="login-username" type="text" placeholder="Username" required />
@@ -20,8 +17,6 @@
         <button type="button" id="login-btn">Login</button>
         <p>Don't have an account? <a href="#" id="show-register">Register</a></p>
       </form>
-
-      <!-- Register Form (Hidden) -->
       <form id="register-form" class="form-section" style="display: none;">
         <h2>Register</h2>
         <input id="register-username" type="text" placeholder="Username (min 3 chars)" required />
@@ -30,24 +25,19 @@
         <p>Already have an account? <a href="#" id="show-login">Login</a></p>
       </form>
     </div>
-
-    <!-- Task Container (Hidden until login) -->
     <div id="task-container" class="task-container" style="display: none;">
       <div class="header">
         <h1>My Tasks</h1>
         <div id="user-display" class="user-display"></div>
         <button id="logout-btn" class="logout-btn">Logout</button>
       </div>
-
       <form id="task-form" class="task-form">
         <input id="task-input" type="text" placeholder="Add a new task..." required />
         <button type="submit">Add Task</button>
       </form>
-
       <ul id="task-list" class="task-list"></ul>
     </div>
   </main>
-
-  <script src="index.js"></script>
+  <script src="src/index.js"></script>
 </body>
 </html>

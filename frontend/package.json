@@ -1,0 +1,12 @@
+﻿{
+  "name": "task-management-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npx live-server --entry-file=public/index.html --port=3000",
+    "serve": "npx live-server --entry-file=public/index.html --port=3000"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
