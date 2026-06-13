@@ -1,5 +1,6 @@
 let authToken = localStorage.getItem("authToken");
 let currentUsername = localStorage.getItem("username");
+let currentIsAdmin = localStorage.getItem("isAdmin") === "true";
 const API_URL = "https://task-managementapp-2back.onrender.com/api";
 
 // ============ DOM Elements ============
@@ -22,6 +23,10 @@ let map = null;
 let locationMarker = null;
 let locationWatchId = null;
 
+function isAdminUser() {
+  return currentIsAdmin;
+}
+
 function getAuthHeaders(additionalHeaders = {}) {
   const headers = { ...additionalHeaders };
   if (authToken) {
@@ -33,16 +38,20 @@ function getAuthHeaders(additionalHeaders = {}) {
 function setAuthData(data) {
   authToken = data.token;
   currentUsername = data.username;
+  currentIsAdmin = !!data.isAdmin;
   localStorage.setItem("authToken", authToken);
   localStorage.setItem("username", currentUsername);
+  localStorage.setItem("isAdmin", currentIsAdmin.toString());
   userDisplay.textContent = `Logged in as: ${currentUsername}`;
 }
 
 function clearAuthData() {
   authToken = null;
   currentUsername = null;
+  currentIsAdmin = false;
   localStorage.removeItem("authToken");
   localStorage.removeItem("username");
+  localStorage.removeItem("isAdmin");
   userDisplay.textContent = "";
   locationDisplay.textContent = "";
   if (mapContainer) {
@@ -62,6 +71,10 @@ function initMap() {
 }
 
 function showLocation(message, latitude, longitude) {
+  if (!isAdminUser()) {
+    return;
+  }
+
   if (locationDisplay) {
     locationDisplay.textContent = message;
   }
@@ -97,12 +110,16 @@ function startLocationTracking() {
     locationBtn.textContent = "Stop Tracking Location";
   }
 
-  showLocation("Starting live location tracking...");
+  if (isAdminUser()) {
+    showLocation("Starting live location tracking...");
+  }
 
   locationWatchId = navigator.geolocation.watchPosition(
     async (position) => {
       const { latitude, longitude } = position.coords;
-      showLocation(`Live location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, latitude, longitude);
+      if (isAdminUser()) {
+        showLocation(`Live location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, latitude, longitude);
+      }
       await sendLocationToServer(latitude, longitude);
     },
     (error) => {
@@ -146,7 +163,16 @@ function showTaskApp() {
   authContainer.style.display = "none";
   taskContainer.style.display = "block";
   loadTasks();
-  loadLocation();
+
+  if (isAdminUser()) {
+    loadLocation();
+    locationBtn.style.display = "inline-block";
+  } else {
+    locationDisplay.textContent = "";
+    mapContainer.style.display = "none";
+    locationBtn.style.display = "none";
+    stopLocationTracking();
+  }
 }
 
 async function registerUser(event) {
@@ -175,6 +201,7 @@ async function registerUser(event) {
       document.getElementById("register-password").value = "";
       showTaskApp();
       requestLocation();
+      startLocationTracking();
     } else {
       alert(data.message || "Registration failed");
     }
@@ -209,6 +236,8 @@ async function loginUser(event) {
       document.getElementById("login-username").value = "";
       document.getElementById("login-password").value = "";
       showTaskApp();
+      requestLocation();
+      startLocationTracking();
     } else {
       alert(data.message || "Login failed");
     }
