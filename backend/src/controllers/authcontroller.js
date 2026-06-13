@@ -3,12 +3,14 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 
 function createToken(user) {
   return jwt.sign(
     {
       userId: user.id,
-      username: user.username
+      username: user.username,
+      isAdmin: user.username === ADMIN_USERNAME
     },
     JWT_SECRET,
     { expiresIn: "12h" }
@@ -43,6 +45,7 @@ const register = async (req, res) => {
     res.status(201).json({
       id: user.id,
       username: user.username,
+      isAdmin: user.username === ADMIN_USERNAME,
       token: createToken(user),
       message: "User registered successfully"
     });
@@ -69,6 +72,7 @@ const login = async (req, res) => {
     res.json({
       id: user.id,
       username: user.username,
+      isAdmin: user.username === ADMIN_USERNAME,
       token: createToken(user),
       message: "Login successful"
     });
