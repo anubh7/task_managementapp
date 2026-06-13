@@ -18,3 +18,14 @@ Endpoints:
 
 Authentication uses JWT tokens.
 Set `JWT_SECRET` in `.env` or your environment.
+
+## Deploying to Render
+1. Push this repo to GitHub.
+2. In Render, create a new Web Service and connect the repo.
+3. Set the repo root to `backend` or use the supplied `render.yaml`.
+4. Use these commands:
+   - Build command: `npm install`
+   - Start command: `npm start`
+5. Add `JWT_SECRET` to the Render service environment variables.
+
+Render will automatically use the `PORT` value provided by the platform.

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: task-management-backend
+    env: node
+    plan: starter
+    rootPath: backend
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: JWT_SECRET
+        from: env
