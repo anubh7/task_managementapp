@@ -14,6 +14,8 @@ const userDisplay = document.getElementById("user-display");
 const logoutBtn = document.getElementById("logout-btn");
 const registerBtn = document.getElementById("register-btn");
 const loginBtn = document.getElementById("login-btn");
+const locationBtn = document.getElementById("location-btn");
+const locationDisplay = document.getElementById("location-display");
 
 function getAuthHeaders(additionalHeaders = {}) {
   const headers = { ...additionalHeaders };
@@ -55,6 +57,7 @@ function showTaskApp() {
   authContainer.style.display = "none";
   taskContainer.style.display = "block";
   loadTasks();
+  loadLocation();
 }
 
 async function registerUser(event) {
@@ -128,7 +131,55 @@ async function loginUser(event) {
 function logoutUser() {
   clearAuthData();
   taskList.innerHTML = "";
+  locationDisplay.textContent = "";
   showLoginForm();
+}
+
+function showLocation(message) {
+  locationDisplay.textContent = message;
+}
+
+async function sendLocationToServer(latitude, longitude) {
+  try {
+    const response = await fetch(`${API_URL}/tasks/location`, {
+      method: "POST",
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ latitude, longitude })
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      alert(data.message || "Unable to update location");
+      return;
+    }
+
+    const data = await response.json();
+    showLocation(`Location shared: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`);
+  } catch (error) {
+    console.error("Error sending location:", error);
+    alert("Could not send location to server.");
+  }
+}
+
+function requestLocation() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  showLocation("Requesting location...");
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      sendLocationToServer(latitude, longitude);
+    },
+    (error) => {
+      console.error("Geolocation error:", error);
+      alert("Location permission denied or unavailable.");
+      showLocation("");
+    }
+  );
 }
 
 registerBtn.addEventListener("click", registerUser);
@@ -136,6 +187,7 @@ loginBtn.addEventListener("click", loginUser);
 logoutBtn.addEventListener("click", logoutUser);
 document.getElementById("show-register").addEventListener("click", showRegisterForm);
 document.getElementById("show-login").addEventListener("click", showLoginForm);
+locationBtn.addEventListener("click", requestLocation);
 
 async function loadTasks() {
   if (!authToken) return;
@@ -244,6 +296,29 @@ async function deleteTask(taskId) {
     loadTasks();
   } catch (error) {
     console.error("Error deleting task:", error);
+  }
+}
+
+async function loadLocation() {
+  if (!authToken) return;
+
+  try {
+    const response = await fetch(`${API_URL}/tasks/location`, {
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    if (data.location) {
+      showLocation(`Last shared location: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`);
+    } else {
+      showLocation("Location not shared yet.");
+    }
+  } catch (error) {
+    console.error("Error loading location:", error);
   }
 }
 

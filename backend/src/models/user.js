@@ -44,6 +44,18 @@ class User {
     await db.read();
     return db.data.users;
   }
+
+  static async save(user) {
+    await db.read();
+    const index = db.data.users.findIndex(u => u.id === user.id);
+    if (index === -1) {
+      return null;
+    }
+
+    db.data.users[index] = user;
+    await db.write();
+    return user;
+  }
 }
 
 module.exports = User;
