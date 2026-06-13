@@ -39,14 +39,16 @@ function clearAuthData() {
   userDisplay.textContent = "";
 }
 
-function showLoginForm() {
+function showLoginForm(event) {
+  if (event) event.preventDefault();
   registerForm.style.display = "none";
   loginForm.style.display = "block";
   authContainer.style.display = "block";
   taskContainer.style.display = "none";
 }
 
-function showRegisterForm() {
+function showRegisterForm(event) {
+  if (event) event.preventDefault();
   registerForm.style.display = "block";
   loginForm.style.display = "none";
 }
@@ -132,7 +134,9 @@ function logoutUser() {
 }
 
 registerBtn.addEventListener("click", registerUser);
+registerForm.addEventListener("submit", registerUser);
 loginBtn.addEventListener("click", loginUser);
+loginForm.addEventListener("submit", loginUser);
 logoutBtn.addEventListener("click", logoutUser);
 document.getElementById("show-register").addEventListener("click", showRegisterForm);
 document.getElementById("show-login").addEventListener("click", showLoginForm);
