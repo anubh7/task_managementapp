@@ -20,11 +20,16 @@ function copyRecursive(src, dest) {
   });
 }
 
+const rootOutputDir = path.resolve(__dirname, '..', '..', 'dist');
+
 if (!fs.existsSync(sourceDir)) {
   console.error(`Source directory not found: ${sourceDir}`);
   process.exit(1);
 }
 
 fs.rmSync(outputDir, { recursive: true, force: true });
+fs.rmSync(rootOutputDir, { recursive: true, force: true });
 copyRecursive(sourceDir, outputDir);
+copyRecursive(sourceDir, rootOutputDir);
 console.log(`Built static site to ${outputDir}`);
+console.log(`Built static site to ${rootOutputDir}`);
