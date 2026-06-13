@@ -16,6 +16,11 @@ const registerBtn = document.getElementById("register-btn");
 const loginBtn = document.getElementById("login-btn");
 const locationBtn = document.getElementById("location-btn");
 const locationDisplay = document.getElementById("location-display");
+const mapContainer = document.getElementById("map");
+
+let map = null;
+let locationMarker = null;
+let locationWatchId = null;
 
 function getAuthHeaders(additionalHeaders = {}) {
   const headers = { ...additionalHeaders };
@@ -39,6 +44,88 @@ function clearAuthData() {
   localStorage.removeItem("authToken");
   localStorage.removeItem("username");
   userDisplay.textContent = "";
+  locationDisplay.textContent = "";
+  if (mapContainer) {
+    mapContainer.style.display = "none";
+  }
+  stopLocationTracking();
+}
+
+function initMap() {
+  if (!map) {
+    map = L.map("map").setView([0, 0], 2);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+  }
+  mapContainer.style.display = "block";
+}
+
+function showLocation(message, latitude, longitude) {
+  if (locationDisplay) {
+    locationDisplay.textContent = message;
+  }
+
+  if (typeof latitude === "number" && typeof longitude === "number") {
+    initMap();
+    if (locationMarker) {
+      locationMarker.setLatLng([latitude, longitude]);
+    } else {
+      locationMarker = L.marker([latitude, longitude]).addTo(map);
+    }
+    map.setView([latitude, longitude], 13);
+  }
+}
+
+function stopLocationTracking() {
+  if (locationWatchId !== null) {
+    navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId = null;
+  }
+  if (locationBtn) {
+    locationBtn.textContent = "Start Tracking Location";
+  }
+}
+
+function startLocationTracking() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  if (locationBtn) {
+    locationBtn.textContent = "Stop Tracking Location";
+  }
+
+  showLocation("Starting live location tracking...");
+
+  locationWatchId = navigator.geolocation.watchPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      showLocation(`Live location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, latitude, longitude);
+      await sendLocationToServer(latitude, longitude);
+    },
+    (error) => {
+      console.error("Geolocation error:", error);
+      alert("Location permission denied or unavailable.");
+      showLocation("Unable to track location.");
+      stopLocationTracking();
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 15000
+    }
+  );
+}
+
+function toggleLocationTracking() {
+  if (locationWatchId !== null) {
+    stopLocationTracking();
+    showLocation("Location tracking stopped.");
+  } else {
+    startLocationTracking();
+  }
 }
 
 function showLoginForm() {
@@ -85,6 +172,7 @@ async function registerUser(event) {
       document.getElementById("register-username").value = "";
       document.getElementById("register-password").value = "";
       showTaskApp();
+      requestLocation();
     } else {
       alert(data.message || "Registration failed");
     }
@@ -94,49 +182,11 @@ async function registerUser(event) {
   }
 }
 
-async function loginUser(event) {
-  event.preventDefault();
-
-  const username = document.getElementById("login-username").value;
-  const password = document.getElementById("login-password").value;
-
-  if (!username || !password) {
-    alert("Please fill in all fields");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: getAuthHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ username, password })
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      setAuthData(data);
-      document.getElementById("login-username").value = "";
-      document.getElementById("login-password").value = "";
-      showTaskApp();
-    } else {
-      alert(data.message || "Login failed");
-    }
-  } catch (error) {
-    alert("Error logging in. Check console.");
-    console.error(error);
-  }
-}
-
-function logoutUser() {
+async function logoutUser() {
   clearAuthData();
   taskList.innerHTML = "";
   locationDisplay.textContent = "";
   showLoginForm();
-}
-
-function showLocation(message) {
-  locationDisplay.textContent = message;
 }
 
 async function sendLocationToServer(latitude, longitude) {
@@ -154,7 +204,7 @@ async function sendLocationToServer(latitude, longitude) {
     }
 
     const data = await response.json();
-    showLocation(`Location shared: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`);
+    showLocation(`Location shared: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`, data.location.latitude, data.location.longitude);
   } catch (error) {
     console.error("Error sending location:", error);
     alert("Could not send location to server.");
@@ -187,7 +237,7 @@ loginBtn.addEventListener("click", loginUser);
 logoutBtn.addEventListener("click", logoutUser);
 document.getElementById("show-register").addEventListener("click", showRegisterForm);
 document.getElementById("show-login").addEventListener("click", showLoginForm);
-locationBtn.addEventListener("click", requestLocation);
+locationBtn.addEventListener("click", toggleLocationTracking);
 
 async function loadTasks() {
   if (!authToken) return;
@@ -313,7 +363,7 @@ async function loadLocation() {
 
     const data = await response.json();
     if (data.location) {
-      showLocation(`Last shared location: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`);
+      showLocation(`Last shared location: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`, data.location.latitude, data.location.longitude);
     } else {
       showLocation("Location not shared yet.");
     }

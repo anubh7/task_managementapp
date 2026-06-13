@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Task Management App</title>
   <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" integrity="sha256-xwE/5s5EmMZR90h2QKCV3G4gG0X+x1uO7pGY7g6Y67o=" crossorigin="" />
 </head>
 <body>
   <main class="container">
@@ -37,12 +38,13 @@
         <h1>My Tasks</h1>
         <div id="user-display" class="user-display"></div>
         <div class="location-actions">
-          <button id="location-btn" class="location-btn">Share Location</button>
+          <button id="location-btn" class="location-btn">Start Tracking Location</button>
           <button id="logout-btn" class="logout-btn">Logout</button>
         </div>
       </div>
 
       <div id="location-display" class="location-display"></div>
+      <div id="map" class="map-container" style="display: none;"></div>
 
       <form id="task-form" class="task-form">
         <input id="task-input" type="text" placeholder="Add a new task..." required />
@@ -53,6 +55,7 @@
     </div>
   </main>
 
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js" integrity="sha256-gZCkTVbHfGA+fImagehCwIf5Gf77mCGxwUUwN1e5Awk=" crossorigin=""></script>
   <script src="index.js"></script>
 </body>
 </html>
