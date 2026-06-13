@@ -184,6 +184,40 @@ async function registerUser(event) {
   }
 }
 
+async function loginUser(event) {
+  event.preventDefault();
+
+  const username = document.getElementById("login-username").value;
+  const password = document.getElementById("login-password").value;
+
+  if (!username || !password) {
+    alert("Please fill in all fields");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setAuthData(data);
+      document.getElementById("login-username").value = "";
+      document.getElementById("login-password").value = "";
+      showTaskApp();
+    } else {
+      alert(data.message || "Login failed");
+    }
+  } catch (error) {
+    alert("Error logging in. Check console.");
+    console.error(error);
+  }
+}
+
 async function logoutUser() {
   clearAuthData();
   taskList.innerHTML = "";
