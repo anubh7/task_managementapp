@@ -44,7 +44,30 @@ const getLocation = async (req, res) => {
   }
 };
 
+const getAllLocations = async (req, res) => {
+  if (!req.isAdmin) {
+    return res.status(403).json({ message: "Forbidden: admin access required" });
+  }
+
+  try {
+    const users = await User.getAll();
+    const locations = users
+      .filter((user) => user.location)
+      .map((user) => ({
+        id: user.id,
+        username: user.username,
+        location: user.location
+      }));
+
+    res.json({ locations });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching all user locations" });
+  }
+};
+
 module.exports = {
   updateLocation,
-  getLocation
+  getLocation,
+  getAllLocations
 };

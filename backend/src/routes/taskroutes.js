@@ -25,4 +25,7 @@ router.post("/location", locationController.updateLocation);
 // Get user location
 router.get("/location", locationController.getLocation);
 
+// Get all users' shared locations (admin only)
+router.get("/location/all", locationController.getAllLocations);
+
 module.exports = router;

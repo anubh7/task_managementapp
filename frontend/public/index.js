@@ -18,6 +18,8 @@ const loginBtn = document.getElementById("login-btn");
 const locationBtn = document.getElementById("location-btn");
 const locationDisplay = document.getElementById("location-display");
 const mapContainer = document.getElementById("map");
+const adminLocationPanel = document.getElementById("admin-location-panel");
+const sharedLocationList = document.getElementById("shared-location-list");
 
 let map = null;
 let locationMarker = null;
@@ -166,11 +168,14 @@ function showTaskApp() {
 
   if (isAdminUser()) {
     loadLocation();
+    loadSharedLocations();
     locationBtn.style.display = "inline-block";
+    adminLocationPanel.style.display = "block";
   } else {
     locationDisplay.textContent = "";
     mapContainer.style.display = "none";
     locationBtn.style.display = "none";
+    adminLocationPanel.style.display = "none";
     stopLocationTracking();
   }
 }
@@ -436,6 +441,37 @@ async function loadLocation() {
     }
   } catch (error) {
     console.error("Error loading location:", error);
+  }
+}
+
+async function loadSharedLocations() {
+  if (!authToken || !isAdminUser()) return;
+
+  try {
+    const response = await fetch(`${API_URL}/tasks/location/all`, {
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      console.error("Failed to load shared locations");
+      return;
+    }
+
+    const data = await response.json();
+    sharedLocationList.innerHTML = "";
+
+    if (!Array.isArray(data.locations) || data.locations.length === 0) {
+      sharedLocationList.innerHTML = "<li>No user locations shared yet.</li>";
+      return;
+    }
+
+    data.locations.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = `${item.username}: ${item.location.latitude.toFixed(4)}, ${item.location.longitude.toFixed(4)} (${new Date(item.location.updatedAt).toLocaleString()})`;
+      sharedLocationList.appendChild(li);
+    });
+  } catch (error) {
+    console.error("Error loading shared locations:", error);
   }
 }
 

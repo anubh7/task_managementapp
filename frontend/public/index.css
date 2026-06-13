@@ -238,6 +238,35 @@ body {
   display: none;
 }
 
+.admin-location-panel {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #dce7ff;
+  border-radius: 10px;
+  background: #f5faff;
+}
+
+.admin-location-panel h2 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-size: 18px;
+}
+
+.shared-location-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.shared-location-list li {
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e5ecff;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  color: #34495e;
+  font-size: 14px;
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;
