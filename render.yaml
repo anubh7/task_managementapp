@@ -3,17 +3,19 @@ services:
     name: task-management-backend
     env: node
     plan: starter
-    rootPath: .
+    rootPath: backend
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: JWT_SECRET
+        from: env
+      - key: ADMIN_USERNAME
         from: env
 
   - type: static
     name: task-management-frontend
     env: static
     plan: starter
-    rootPath: .
-    buildCommand: npm run build
+    rootPath: frontend
+    buildCommand: npm install && npm run build
     publishPath: dist

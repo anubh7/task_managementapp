@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 
 const JWT_SECRET = process.env.JWT_SECRET || "default-secret";
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "anubhavgg";
 
 function createToken(user) {
   return jwt.sign(

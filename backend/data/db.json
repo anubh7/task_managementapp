@@ -1,4 +1,11 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": 1,
+      "username": "anubhavgg",
+      "password": "$2a$10$QbA4Sy2Mb8K1APAbxgjBbuuW43tGAzGZJetWZnwGtuYT8zJWMfrgK",
+      "createdAt": "2026-06-13T18:47:17.522Z"
+    }
+  ],
   "tasks": []
 }

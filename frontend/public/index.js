@@ -1,7 +1,7 @@
 let authToken = localStorage.getItem("authToken");
 let currentUsername = localStorage.getItem("username");
 let currentIsAdmin = localStorage.getItem("isAdmin") === "true";
-const API_URL = "https://task-managementapp-2back.onrender.com/api";
+const API_URL = "https://task-managementapp-2.onrender.com/api";
 
 // ============ DOM Elements ============
 const authContainer = document.getElementById("auth-container");
