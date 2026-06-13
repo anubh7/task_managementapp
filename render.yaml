@@ -9,3 +9,11 @@ services:
     envVars:
       - key: JWT_SECRET
         from: env
+
+  - type: static
+    name: task-management-frontend
+    env: static
+    plan: starter
+    rootPath: frontend
+    buildCommand: npm install && npm run build
+    publishPath: dist

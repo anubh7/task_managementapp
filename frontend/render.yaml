@@ -1,0 +1,8 @@
+services:
+  - type: static
+    name: task-management-frontend
+    env: static
+    plan: starter
+    rootPath: .
+    buildCommand: npm install && npm run build
+    publishPath: dist
