@@ -6,87 +6,149 @@
 
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.12), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.15), transparent 30%),
+    linear-gradient(135deg, #25274d 0%, #3a3d6a 35%, #5c4d91 100%);
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
+  animation: bgShift 12s ease infinite;
+}
+
+@keyframes bgShift {
+  0%, 100% { background-position: 0% 0%, 100% 100%; }
+  50% { background-position: 15% 20%, 85% 80%; }
 }
 
 .container {
   width: 100%;
-  max-width: 500px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  box-shadow: 0 45px 90px rgba(10, 15, 55, 0.25);
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+  transform-style: preserve-3d;
+  perspective: 1400px;
 }
 
 /* ============ Auth Styles ============ */
 .auth-container {
-  padding: 40px 30px;
+  padding: 40px 34px 34px;
+  position: relative;
+}
+
+.auth-container::before,
+.auth-container::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.auth-container::before {
+  top: -50px;
+  left: -40px;
+  background: rgba(110, 202, 255, 0.35);
+}
+
+.auth-container::after {
+  bottom: -60px;
+  right: -50px;
+  background: rgba(188, 81, 255, 0.28);
 }
 
 .auth-container h1 {
   text-align: center;
-  color: #333;
-  margin-bottom: 30px;
-  font-size: 28px;
+  color: #f8f9ff;
+  margin-bottom: 28px;
+  font-size: 32px;
+  letter-spacing: 0.6px;
+  text-shadow: 0 8px 30px rgba(0, 0, 0, 0.16);
 }
 
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
+  padding: 32px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 30px 60px rgba(2, 8, 28, 0.12);
+  transform: translateZ(30px);
+  transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+
+.form-section:hover {
+  transform: translateZ(42px) translateY(-6px);
+  box-shadow: 0 38px 80px rgba(2, 8, 28, 0.16);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .form-section h2 {
-  color: #667eea;
-  font-size: 20px;
+  color: #e9efff;
+  font-size: 22px;
   margin-bottom: 10px;
+  letter-spacing: 0.4px;
 }
 
 .form-section input {
-  padding: 12px 15px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: border-color 0.3s;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 16px;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #f3f6ff;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.form-section input::placeholder {
+  color: rgba(244, 248, 255, 0.7);
 }
 
 .form-section input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: rgba(103, 126, 234, 0.85);
+  transform: translateY(-1px);
 }
 
 .form-section button {
-  padding: 12px;
+  padding: 14px;
   border: none;
-  background: #667eea;
+  background: linear-gradient(135deg, #5a6bff, #8d5cff);
   color: white;
   font-size: 16px;
-  font-weight: bold;
-  border-radius: 6px;
+  font-weight: 700;
+  border-radius: 14px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 18px 32px rgba(89, 94, 255, 0.24);
 }
 
 .form-section button:hover {
-  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 22px 40px rgba(89, 94, 255, 0.3);
 }
 
 .form-section p {
   text-align: center;
-  color: #666;
+  color: rgba(242, 247, 255, 0.85);
   font-size: 14px;
   margin-top: 10px;
 }
 
 .form-section a {
-  color: #667eea;
+  color: #c3d3ff;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .form-section a:hover {
