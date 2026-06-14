@@ -69,9 +69,20 @@ function requestLocationPermission() {
       return;
     }
 
+    // Timeout to prevent hanging indefinitely if browser never fires callback
+    const timeoutId = setTimeout(() => {
+      reject(new Error("Geolocation request timed out."));
+    }, 5000);
+
     navigator.geolocation.getCurrentPosition(
-      (position) => resolve(position),
-      (error) => reject(error),
+      (position) => {
+        clearTimeout(timeoutId);
+        resolve(position);
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   });
