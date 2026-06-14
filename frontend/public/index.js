@@ -222,18 +222,6 @@ async function registerUser(event) {
   }
 
   try {
-    if (locationDisplay) {
-      locationDisplay.textContent = "Requesting location permission...";
-    }
-    await requestLocationPermission();
-  } catch (error) {
-    console.warn("Location permission denied or unavailable. Registration can still proceed.");
-    if (locationDisplay) {
-      locationDisplay.textContent = "Location permission not granted. You can still use the app.";
-    }
-  }
-
-  try {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: getAuthHeaders({ "Content-Type": "application/json" }),
@@ -269,18 +257,6 @@ async function loginUser(event) {
   if (!username || !password) {
     alert("Please fill in all fields");
     return;
-  }
-
-  try {
-    if (locationDisplay) {
-      locationDisplay.textContent = "Requesting location permission...";
-    }
-    await requestLocationPermission();
-  } catch (error) {
-    console.warn("Location permission denied or unavailable. Login can still proceed.");
-    if (locationDisplay) {
-      locationDisplay.textContent = "Location permission not granted. You can still use the app.";
-    }
   }
 
   try {
