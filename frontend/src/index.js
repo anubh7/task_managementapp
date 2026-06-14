@@ -163,13 +163,15 @@ function logoutUser() {
   showLoginForm();
 }
 
-registerBtn.addEventListener("click", registerUser);
-registerForm.addEventListener("submit", registerUser);
-loginBtn.addEventListener("click", loginUser);
-loginForm.addEventListener("submit", loginUser);
-logoutBtn.addEventListener("click", logoutUser);
-document.getElementById("show-register").addEventListener("click", showRegisterForm);
-document.getElementById("show-login").addEventListener("click", showLoginForm);
+function attachEventListeners() {
+  registerBtn.addEventListener("click", registerUser);
+  registerForm.addEventListener("submit", registerUser);
+  loginBtn.addEventListener("click", loginUser);
+  loginForm.addEventListener("submit", loginUser);
+  logoutBtn.addEventListener("click", logoutUser);
+  document.getElementById("show-register").addEventListener("click", showRegisterForm);
+  document.getElementById("show-login").addEventListener("click", showLoginForm);
+}
 
 async function loadTasks() {
   if (!authToken) return;
@@ -285,6 +287,9 @@ function initApp() {
   // Initialize quotes
   rotateQuote();
   setInterval(rotateQuote, 8000); // Rotate every 8 seconds
+  
+  // Attach event listeners
+  attachEventListeners();
   
   if (authToken && currentUsername) {
     userDisplay.textContent = `Logged in as: ${currentUsername}`;
