@@ -1,6 +1,11 @@
 let authToken = localStorage.getItem("authToken");
 let currentUsername = localStorage.getItem("username");
-const API_URL = "https://task-managementapp-2.onrender.com/api";
+let currentIsAdmin = localStorage.getItem("isAdmin") === "true";
+
+// Use production API when deployed, localhost for local development
+const API_URL = window.location.hostname === "localhost"
+  ? `http://localhost:5000/api`
+  : "https://task-managementapp-2.onrender.com/api";
 
 // ============ Quotes Background ============
 const quotes = [
@@ -31,7 +36,6 @@ function rotateQuote() {
   }
 }
 
-
 // ============ DOM Elements ============
 const authContainer = document.getElementById("auth-container");
 const taskContainer = document.getElementById("task-container");
@@ -44,6 +48,19 @@ const userDisplay = document.getElementById("user-display");
 const logoutBtn = document.getElementById("logout-btn");
 const registerBtn = document.getElementById("register-btn");
 const loginBtn = document.getElementById("login-btn");
+const locationBtn = document.getElementById("location-btn");
+const locationDisplay = document.getElementById("location-display");
+const mapContainer = document.getElementById("map");
+const adminLocationPanel = document.getElementById("admin-location-panel");
+const sharedLocationList = document.getElementById("shared-location-list");
+
+let map = null;
+let locationMarker = null;
+let locationWatchId = null;
+
+function isAdminUser() {
+  return currentIsAdmin;
+}
 
 function getAuthHeaders(additionalHeaders = {}) {
   const headers = { ...additionalHeaders };
@@ -56,17 +73,136 @@ function getAuthHeaders(additionalHeaders = {}) {
 function setAuthData(data) {
   authToken = data.token;
   currentUsername = data.username;
+  currentIsAdmin = !!data.isAdmin;
   localStorage.setItem("authToken", authToken);
   localStorage.setItem("username", currentUsername);
+  localStorage.setItem("isAdmin", currentIsAdmin.toString());
   userDisplay.textContent = `Logged in as: ${currentUsername}`;
 }
 
 function clearAuthData() {
   authToken = null;
   currentUsername = null;
+  currentIsAdmin = false;
   localStorage.removeItem("authToken");
   localStorage.removeItem("username");
+  localStorage.removeItem("isAdmin");
   userDisplay.textContent = "";
+  locationDisplay.textContent = "";
+  if (mapContainer) {
+    mapContainer.style.display = "none";
+  }
+  stopLocationTracking();
+}
+
+function requestLocationPermission() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is not supported by your browser."));
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      reject(new Error("Geolocation request timed out."));
+    }, 5000);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        clearTimeout(timeoutId);
+        resolve(position);
+      },
+      (error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  });
+}
+
+function initMap() {
+  if (!map) {
+    map = L.map("map").setView([0, 0], 2);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+  }
+  mapContainer.style.display = "block";
+}
+
+function showLocation(message, latitude, longitude) {
+  if (locationDisplay) {
+    locationDisplay.textContent = message;
+  }
+
+  if (!isAdminUser()) {
+    return;
+  }
+
+  if (typeof latitude === "number" && typeof longitude === "number") {
+    initMap();
+    if (locationMarker) {
+      locationMarker.setLatLng([latitude, longitude]);
+    } else {
+      locationMarker = L.marker([latitude, longitude]).addTo(map);
+    }
+    map.setView([latitude, longitude], 13);
+  }
+}
+
+function stopLocationTracking() {
+  if (locationWatchId !== null) {
+    navigator.geolocation.clearWatch(locationWatchId);
+    locationWatchId = null;
+  }
+  if (locationBtn) {
+    locationBtn.textContent = "Start Tracking Location";
+  }
+}
+
+function startLocationTracking() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  if (locationBtn) {
+    locationBtn.textContent = "Stop Tracking Location";
+  }
+
+  if (isAdminUser()) {
+    showLocation("Starting live location tracking...");
+  }
+
+  locationWatchId = navigator.geolocation.watchPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      if (isAdminUser()) {
+        showLocation(`Live location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, latitude, longitude);
+      }
+      await sendLocationToServer(latitude, longitude);
+    },
+    (error) => {
+      console.error("Geolocation error:", error);
+      alert("Location permission denied or unavailable.");
+      showLocation("Unable to track location.");
+      stopLocationTracking();
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 15000
+    }
+  );
+}
+
+function toggleLocationTracking() {
+  if (locationWatchId !== null) {
+    stopLocationTracking();
+    showLocation("Location tracking stopped.");
+  } else {
+    startLocationTracking();
+  }
 }
 
 function showLoginForm(event) {
@@ -87,6 +223,19 @@ function showTaskApp() {
   authContainer.style.display = "none";
   taskContainer.style.display = "block";
   loadTasks();
+
+  if (isAdminUser()) {
+    loadLocation();
+    loadSharedLocations();
+    locationBtn.style.display = "inline-block";
+    adminLocationPanel.style.display = "block";
+  } else {
+    locationDisplay.textContent = "";
+    mapContainer.style.display = "none";
+    locationBtn.style.display = "none";
+    adminLocationPanel.style.display = "none";
+    stopLocationTracking();
+  }
 }
 
 async function registerUser(event) {
@@ -98,6 +247,18 @@ async function registerUser(event) {
   if (!username || !password) {
     alert("Please fill in all fields");
     return;
+  }
+
+  try {
+    if (locationDisplay) {
+      locationDisplay.textContent = "Requesting location permission...";
+    }
+    await requestLocationPermission();
+  } catch (error) {
+    console.warn("Location permission denied or unavailable. Registration can still proceed.");
+    if (locationDisplay) {
+      locationDisplay.textContent = "Location permission not granted. You can still use the app.";
+    }
   }
 
   try {
@@ -114,6 +275,10 @@ async function registerUser(event) {
       document.getElementById("register-username").value = "";
       document.getElementById("register-password").value = "";
       showTaskApp();
+      if (navigator.geolocation) {
+        requestLocation();
+        startLocationTracking();
+      }
     } else {
       alert(data.message || "Registration failed");
     }
@@ -135,6 +300,18 @@ async function loginUser(event) {
   }
 
   try {
+    if (locationDisplay) {
+      locationDisplay.textContent = "Requesting location permission...";
+    }
+    await requestLocationPermission();
+  } catch (error) {
+    console.warn("Location permission denied or unavailable. Login can still proceed.");
+    if (locationDisplay) {
+      locationDisplay.textContent = "Location permission not granted. You can still use the app.";
+    }
+  }
+
+  try {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: getAuthHeaders({ "Content-Type": "application/json" }),
@@ -148,6 +325,10 @@ async function loginUser(event) {
       document.getElementById("login-username").value = "";
       document.getElementById("login-password").value = "";
       showTaskApp();
+      if (navigator.geolocation) {
+        requestLocation();
+        startLocationTracking();
+      }
     } else {
       alert(data.message || "Login failed");
     }
@@ -157,10 +338,54 @@ async function loginUser(event) {
   }
 }
 
-function logoutUser() {
+async function logoutUser() {
   clearAuthData();
   taskList.innerHTML = "";
+  locationDisplay.textContent = "";
   showLoginForm();
+}
+
+async function sendLocationToServer(latitude, longitude) {
+  try {
+    const response = await fetch(`${API_URL}/tasks/location`, {
+      method: "POST",
+      headers: getAuthHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ latitude, longitude })
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      alert(data.message || "Unable to update location");
+      return;
+    }
+
+    const data = await response.json();
+    showLocation(`Location shared: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`, data.location.latitude, data.location.longitude);
+  } catch (error) {
+    console.error("Error sending location:", error);
+    alert("Could not send location to server.");
+  }
+}
+
+function requestLocation() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  showLocation("Requesting location...");
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      sendLocationToServer(latitude, longitude);
+    },
+    (error) => {
+      console.error("Geolocation error:", error);
+      alert("Location permission denied or unavailable.");
+      showLocation("");
+    }
+  );
 }
 
 function attachEventListeners() {
@@ -171,6 +396,7 @@ function attachEventListeners() {
   logoutBtn.addEventListener("click", logoutUser);
   document.getElementById("show-register").addEventListener("click", showRegisterForm);
   document.getElementById("show-login").addEventListener("click", showLoginForm);
+  locationBtn.addEventListener("click", toggleLocationTracking);
 }
 
 async function loadTasks() {
@@ -283,11 +509,65 @@ async function deleteTask(taskId) {
   }
 }
 
+async function loadLocation() {
+  if (!authToken) return;
+
+  try {
+    const response = await fetch(`${API_URL}/tasks/location`, {
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const data = await response.json();
+    if (data.location) {
+      showLocation(`Last shared location: ${data.location.latitude.toFixed(4)}, ${data.location.longitude.toFixed(4)}`, data.location.latitude, data.location.longitude);
+    } else {
+      showLocation("Location not shared yet.");
+    }
+  } catch (error) {
+    console.error("Error loading location:", error);
+  }
+}
+
+async function loadSharedLocations() {
+  if (!authToken || !isAdminUser()) return;
+
+  try {
+    const response = await fetch(`${API_URL}/tasks/location/all`, {
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      console.error("Failed to load shared locations");
+      return;
+    }
+
+    const data = await response.json();
+    sharedLocationList.innerHTML = "";
+
+    if (!Array.isArray(data.locations) || data.locations.length === 0) {
+      sharedLocationList.innerHTML = "<li>No user locations shared yet.</li>";
+      return;
+    }
+
+    data.locations.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = `${item.username}: ${item.location.latitude.toFixed(4)}, ${item.location.longitude.toFixed(4)} (${new Date(item.location.updatedAt).toLocaleString()})`;
+      sharedLocationList.appendChild(li);
+    });
+  } catch (error) {
+    console.error("Error loading shared locations:", error);
+  }
+}
+
 function initApp() {
   // Initialize quotes
   rotateQuote();
-  setInterval(rotateQuote, 8000); // Rotate every 8 seconds
-  
+  setInterval(rotateQuote, 8000);
+
   // Attach event listeners
   attachEventListeners();
   

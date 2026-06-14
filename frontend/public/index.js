@@ -1,7 +1,11 @@
 let authToken = localStorage.getItem("authToken");
 let currentUsername = localStorage.getItem("username");
 let currentIsAdmin = localStorage.getItem("isAdmin") === "true";
-const API_URL = "https://task-managementapp-2.onrender.com/api";
+
+// Use production API when deployed, localhost for local development
+const API_URL = window.location.hostname === "localhost"
+  ? `http://localhost:5000/api`
+  : "https://task-managementapp-2.onrender.com/api";
 
 // ============ DOM Elements ============
 const authContainer = document.getElementById("auth-container");
