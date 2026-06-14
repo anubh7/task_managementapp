@@ -15,6 +15,7 @@ body {
   align-items: center;
   padding: 24px;
   overflow: hidden;
+  position: relative;
 }
 
 body::before,
@@ -427,4 +428,63 @@ body::after {
 .map-container.leaflet-container {
   width: 100%;
   height: 100%;
+}
+
+/* ============ Quotes Background ============ */
+.quotes-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.quote-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  opacity: 0.15;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.quote-text {
+  font-size: 28px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+  margin-bottom: 16px;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.quote-author {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.quote-author::before {
+  content: "— ";
+}
+
+@keyframes quoteFade {
+  0%, 100% {
+    opacity: 0.15;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.25;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
+.quote-container {
+  animation: quoteFade 8s ease-in-out infinite;
 }

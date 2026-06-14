@@ -2,6 +2,36 @@ let authToken = localStorage.getItem("authToken");
 let currentUsername = localStorage.getItem("username");
 const API_URL = "https://task-managementapp-2.onrender.com/api";
 
+// ============ Quotes Background ============
+const quotes = [
+  { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+  { text: "Focus on being productive instead of busy.", author: "Tim Ferriss" },
+  { text: "It's not about having time, it's about making time.", author: "Unknown" },
+  { text: "Small daily improvements lead to stunning results.", author: "Robin Sharma" },
+  { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
+  { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+  { text: "Productivity is never an accident. It is always the result of commitment to excellence.", author: "Paul J. Meyer" },
+  { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+  { text: "The key is not to prioritize your schedule, but to schedule your priorities.", author: "Stephen Covey" },
+  { text: "Action is the foundational key to all success.", author: "Pablo Picasso" }
+];
+
+let currentQuoteIndex = 0;
+
+function rotateQuote() {
+  const quoteText = document.getElementById("quote-text");
+  const quoteAuthor = document.getElementById("quote-author");
+  
+  if (quoteText && quoteAuthor) {
+    const quote = quotes[currentQuoteIndex];
+    quoteText.textContent = quote.text;
+    quoteAuthor.textContent = quote.author;
+    
+    currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+  }
+}
+
+
 // ============ DOM Elements ============
 const authContainer = document.getElementById("auth-container");
 const taskContainer = document.getElementById("task-container");
@@ -252,6 +282,10 @@ async function deleteTask(taskId) {
 }
 
 function initApp() {
+  // Initialize quotes
+  rotateQuote();
+  setInterval(rotateQuote, 8000); // Rotate every 8 seconds
+  
   if (authToken && currentUsername) {
     userDisplay.textContent = `Logged in as: ${currentUsername}`;
     showTaskApp();

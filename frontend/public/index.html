@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" integrity="sha256-xwE/5s5EmMZR90h2QKCV3G4gG0X+x1uO7pGY7g6Y67o=" crossorigin="" />
 </head>
 <body>
+  <div class="quotes-background">
+    <div class="quote-container">
+      <p class="quote-text" id="quote-text"></p>
+      <p class="quote-author" id="quote-author"></p>
+    </div>
+  </div>
   <main class="container">
     <!-- Authentication Container -->
     <div id="auth-container" class="auth-container">
@@ -27,7 +33,7 @@
         <h2>Register</h2>
         <input id="register-username" type="text" placeholder="Username (min 3 chars)" required />
         <input id="register-password" type="password" placeholder="Password (min 6 chars)" required />
-        <button type="submit" id="register-btn">Register</button>
+        <button type="button" id="register-btn">Register</button>
         <p>Already have an account? <a href="#" id="show-login">Login</a></p>
       </form>
     </div>
