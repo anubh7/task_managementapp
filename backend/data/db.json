@@ -5,6 +5,12 @@
       "username": "anubhavgg",
       "password": "$2a$10$7AfIC9W.7OZCvO4M7MfYKu.2N1Mc8hWuxVigPGyU5HV6nlFKNmE5G",
       "createdAt": "2026-06-13T18:47:17.522Z"
+    },
+    {
+      "id": 2,
+      "username": "testuser",
+      "password": "$2a$10$hN.B3pf27tkKKiD2H1mRgOBHHlFvqLO3wn.LRhWB0caypU0FtCkAm",
+      "createdAt": "2026-06-14T07:34:16.302Z"
     }
   ],
   "tasks": []
