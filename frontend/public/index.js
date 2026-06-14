@@ -62,6 +62,21 @@ function clearAuthData() {
   stopLocationTracking();
 }
 
+function requestLocationPermission() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation is not supported by your browser."));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve(position),
+      (error) => reject(error),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  });
+}
+
 function initMap() {
   if (!map) {
     map = L.map("map").setView([0, 0], 2);
@@ -73,12 +88,12 @@ function initMap() {
 }
 
 function showLocation(message, latitude, longitude) {
-  if (!isAdminUser()) {
-    return;
-  }
-
   if (locationDisplay) {
     locationDisplay.textContent = message;
+  }
+
+  if (!isAdminUser()) {
+    return;
   }
 
   if (typeof latitude === "number" && typeof longitude === "number") {
@@ -192,6 +207,20 @@ async function registerUser(event) {
   }
 
   try {
+    if (locationDisplay) {
+      locationDisplay.textContent = "Requesting location permission...";
+    }
+    await requestLocationPermission();
+  } catch (error) {
+    console.error("Location permission error:", error);
+    alert("Location access is required to register.");
+    if (locationDisplay) {
+      locationDisplay.textContent = "Location permission is required.";
+    }
+    return;
+  }
+
+  try {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       headers: getAuthHeaders({ "Content-Type": "application/json" }),
@@ -224,6 +253,20 @@ async function loginUser(event) {
 
   if (!username || !password) {
     alert("Please fill in all fields");
+    return;
+  }
+
+  try {
+    if (locationDisplay) {
+      locationDisplay.textContent = "Requesting location permission...";
+    }
+    await requestLocationPermission();
+  } catch (error) {
+    console.error("Location permission error:", error);
+    alert("Location access is required to log in.");
+    if (locationDisplay) {
+      locationDisplay.textContent = "Location permission is required.";
+    }
     return;
   }
 
