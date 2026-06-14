@@ -212,12 +212,10 @@ async function registerUser(event) {
     }
     await requestLocationPermission();
   } catch (error) {
-    console.error("Location permission error:", error);
-    alert("Location access is required to register.");
+    console.warn("Location permission denied or unavailable. Registration can still proceed.");
     if (locationDisplay) {
-      locationDisplay.textContent = "Location permission is required.";
+      locationDisplay.textContent = "Location permission not granted. You can still use the app.";
     }
-    return;
   }
 
   try {
@@ -234,8 +232,10 @@ async function registerUser(event) {
       document.getElementById("register-username").value = "";
       document.getElementById("register-password").value = "";
       showTaskApp();
-      requestLocation();
-      startLocationTracking();
+      if (navigator.geolocation) {
+        requestLocation();
+        startLocationTracking();
+      }
     } else {
       alert(data.message || "Registration failed");
     }
@@ -262,12 +262,10 @@ async function loginUser(event) {
     }
     await requestLocationPermission();
   } catch (error) {
-    console.error("Location permission error:", error);
-    alert("Location access is required to log in.");
+    console.warn("Location permission denied or unavailable. Login can still proceed.");
     if (locationDisplay) {
-      locationDisplay.textContent = "Location permission is required.";
+      locationDisplay.textContent = "Location permission not granted. You can still use the app.";
     }
-    return;
   }
 
   try {
@@ -284,8 +282,10 @@ async function loginUser(event) {
       document.getElementById("login-username").value = "";
       document.getElementById("login-password").value = "";
       showTaskApp();
-      requestLocation();
-      startLocationTracking();
+      if (navigator.geolocation) {
+        requestLocation();
+        startLocationTracking();
+      }
     } else {
       alert(data.message || "Login failed");
     }
